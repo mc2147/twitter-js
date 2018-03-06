@@ -1,11 +1,19 @@
+var bodyParser = require('body-parser');
 const express = require( 'express' );
 const app = express(); // creates an instance of an express application
 const nunjucks = require('nunjucks');
 
 const routes = require('./routes');
-app.use('/', routes);
 
-app.use('/static', express.static('public'));
+var socketio = require('socket.io');
+// ...
+var server = app.listen(3000);
+var io = socketio.listen(server);
+
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+app.use('/', routes(io));
+app.use('/static/', express.static('public'));
 
 app.set('view engine', 'html'); // have res.render work with html files
 app.engine('html', nunjucks.render); // when giving html files to res.render, tell it to use nunjucks
@@ -51,6 +59,6 @@ var locals = {
 };
 nunjucks.configure('views', {noCache: true});
 nunjucks.render('index.html', locals, function (err, output) {
-    console.log(output);
+    // console.log(output);
 });
 
